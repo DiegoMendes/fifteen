@@ -7,6 +7,10 @@ extern int board[MAX][MAX];
 // board's dimension
 extern int d;
 
+static int count_inversions(const int * array, int idx);
+static int sum_inversions(const int * array);
+static bool is_solvable(const int * array);
+
 void board_layout(void)
 {
     int total_tiles = d * d;

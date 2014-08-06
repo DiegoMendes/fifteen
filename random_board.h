@@ -14,10 +14,6 @@ extern "C" {
 
 void board_layout(void);
 void shuffle(int * array, int n);
-static int count_inversions(const int * array, int idx);
-static int sum_inversions(const int * array);
-static bool is_solvable(const int * array);
-
 
 #ifdef	__cplusplus
 }
