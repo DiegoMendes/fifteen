@@ -135,3 +135,4 @@ static bool is_solvable(const int * array)
     }
     
 }
+
