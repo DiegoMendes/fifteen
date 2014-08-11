@@ -36,6 +36,9 @@ int board[MAX][MAX];
 // board's dimension
 int d;
 
+// empty tile's position
+int empty_row, empty_col;
+
 // prototypes
 void clear(void);
 void greet(void);

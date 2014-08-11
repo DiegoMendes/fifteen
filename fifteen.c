@@ -24,6 +24,9 @@ extern int board[MAX][MAX];
 // board's dimension
 extern int d;
 
+// empty tile's position
+extern int empty_row, empty_col;
+
 
 int main(int argc, string argv[])
 {
@@ -52,8 +55,6 @@ int main(int argc, string argv[])
     
     // initialize the board
     init();
-    
-    board_layout();
     
     // accept moves until game is won
     while (true)
@@ -145,27 +146,20 @@ void greet(void)
  */
 void init(void)
 {
-    int i;
+    board_layout();
     
-    for (i = d * d - 1; i > 2; i--)
+    for (int i = 0; i < d; i++)
     {
-        board[d - i / d - 1][d -  i % d - 1] = i;
+        for (int j = 0; j < d; j++)
+        {
+            if (board[i][j] == 0)
+            {
+                empty_row = i;
+                empty_col = j;
+                return;
+            }
+        }
     }
-    
-    if (d % 2)
-    {
-        board[d - 1][d - 3] = 2;
-        board[d - 1][d - 2] = 1;
-        board[d - 1][d - 1] = 0;
-    }
-    else
-    {
-        board[d - 1][d - 3] = 1;
-        board[d - 1][d - 2] = 2;
-        board[d - 1][d - 1] = 0;
-    }
-    
-    return;
 }
 
 /**
@@ -201,45 +195,28 @@ bool move(int tile)
     if (tile < 1 || tile > d * d - 1)
         return false;
     
-    // look for the tile's position
-    for (i = 0; i < d; i++)
+    if (empty_row < d - 1 && board[empty_row + 1][empty_col] == tile) // is tile below blank?
     {
-        for (j = 0; j < d; j++)
-        {
-            if (board[i][j] == tile)
-                goto position_found;
-        } 
-    }
-    
-    position_found: ;// nop for legibility
-    
-    // look for the empty slot next to the tile
-    // check above for empty slot
-    if (i < d - 1 && board[i + 1][j] == 0)
-    {
-        board[i + 1][j] = tile;
-        board[i][j] = 0 ;
+        board[empty_row][empty_col] = tile;
+        empty_row++;
         return true;
     }
-    // check below for empty slot
-    if (i > 0 && board[i - 1][j] == 0)
+    if (empty_row > 0 && board[empty_row - 1][empty_col] == tile) // is tile above blank?
     {
-        board[i - 1][j] = tile;
-        board[i][j] = 0 ;
+        board[empty_row][empty_col] = tile;
+        empty_row--;
         return true;
     }
-    // check right for empty slot
-    if (j < d - 1 && board[i][j + 1] == 0)
+    if (empty_col < d - 1 && board[empty_row][empty_col + 1] == tile) // is tile right of blank?
     {
-        board[i][j + 1] = tile;
-        board[i][j] = 0 ;
+        board[empty_row][empty_col] = tile;
+        empty_col++;
         return true;
     }
-    // check left for empty slot
-    if (j > 0 && board[i][j - 1] == 0)
+    if (empty_col > 0 && board[empty_row][empty_col - 1] == tile) // is tile left of blank?
     {
-        board[i][j - 1] = tile;
-        board[i][j] = 0 ;
+        board[empty_row][empty_col] = tile;
+        empty_col--;
         return true;
     }
     
