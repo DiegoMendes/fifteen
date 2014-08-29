@@ -17,6 +17,7 @@
  
 #include "fifteen.h"
 #include "random_board.h"
+#include "a_star.h"
 
 // board, whereby board[i][j] represents row i and column j
 extern int board[MAX][MAX];
@@ -86,6 +87,8 @@ int main(int argc, string argv[])
             {
                 printf("Enter GOD mode\n");
                 free(line);
+                god_mode();
+                printf("GOD mode finnished\n");
                 return 0;
             }
             else
@@ -174,10 +177,16 @@ void draw(void)
         for (j = 0; j < d - 1; j++)
         {
             //printf("%2d ", board[i][j]);
-            !board[i][j] ? printf(" _ ") : printf("%2d ", board[i][j]);
+            if (i == ((board[i][j] - 1) / d) && (j == ((board[i][j] - 1) % d)))
+                printf("\x1B[32m""%2d ""\033[0m", board[i][j]);
+            else
+                !board[i][j] ? printf(" _ ") : printf("%2d ", board[i][j]);
         }
         //printf("%2d\n", board[i][j]);
-        !board[i][j] ? printf(" _\n") : printf("%2d\n", board[i][j]);
+        if (i == ((board[i][j] - 1) / d) && (j == ((board[i][j] - 1) % d)))
+            printf("\x1B[32m""%2d\n""\033[0m", board[i][j]);
+        else
+            !board[i][j] ? printf(" _\n") : printf("%2d\n", board[i][j]);
     }
     
     return;
@@ -189,7 +198,6 @@ void draw(void)
  */
 bool move(int tile)
 {
-    int i, j;
     
     // ensure input is valid
     if (tile < 1 || tile > d * d - 1)
@@ -199,24 +207,28 @@ bool move(int tile)
     {
         board[empty_row][empty_col] = tile;
         empty_row++;
+        board[empty_row][empty_col] = 0;
         return true;
     }
     if (empty_row > 0 && board[empty_row - 1][empty_col] == tile) // is tile above blank?
     {
         board[empty_row][empty_col] = tile;
         empty_row--;
+        board[empty_row][empty_col] = 0;
         return true;
     }
     if (empty_col < d - 1 && board[empty_row][empty_col + 1] == tile) // is tile right of blank?
     {
         board[empty_row][empty_col] = tile;
         empty_col++;
+        board[empty_row][empty_col] = 0;
         return true;
     }
     if (empty_col > 0 && board[empty_row][empty_col - 1] == tile) // is tile left of blank?
     {
         board[empty_row][empty_col] = tile;
         empty_col--;
+        board[empty_row][empty_col] = 0;
         return true;
     }
     

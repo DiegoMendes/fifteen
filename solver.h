@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#include "fifteen.h"
+
     typedef enum 
     {
         N,
@@ -31,12 +33,21 @@ extern "C" {
         left,
         right        
     }movement_direction;
+
     
     void god_mode();
-    void move_blank_2_position(int tile);
-    inline cardinal_direction get_direction_2_tile(int tile_row, int tile_col);
-    inline void move_blank(movement_direction move);
-    void new_move_blank_2_position(int tile);
+    void look_4_tile(int tile, int * ret_row, int * ret_col);
+    void move_blank_2_position(int tile_row, int tile_col);
+    void move_blank(movement_direction move);
+    void move_tile_2_position(int target_row, int target_col);
+    void move_tile(movement_direction move);
+    void fix_top_corner(int iteration);
+    void fix_bottom_corner(int iteration);
+    void rotate_blank(cardinal_direction starting_reference, int number_movements, bool clockwise);
+    void god_mode_debug(char * str);
+    void fix_top_row(int iteration);
+    void fix_left_collumn(int iteration);
+
 
 #ifdef	__cplusplus
 }
