@@ -5,6 +5,7 @@ extern int d;
 
 char str[40];
 
+
 int a_star_search(search_node * root, lifo ** path)
 {
     search_node * node = root;
@@ -23,7 +24,7 @@ int a_star_search(search_node * root, lifo ** path)
     pq_add_entry(&queue, root, h(root));
     
     while (queue.total_entries > 0)
-    {
+    {        
         #if DEBUG
         god_mode_debug("\n----------------\nNew iteration\n----------------\n");
         print_lifo_queue(&closed_set);        
@@ -35,7 +36,7 @@ int a_star_search(search_node * root, lifo ** path)
         #if DEBUG
         draw_node(node);
         #endif
-        if (expand_node(node, &queue, &closed_set) == 1)
+        if (expand_node(&queue, &closed_set) == 1)
         {
             #if DEBUG
             god_mode_debug("Goal node found\n");
@@ -48,9 +49,11 @@ int a_star_search(search_node * root, lifo ** path)
                 #endif
                 return -1;
             }
-            #if DEBUG
+            sprintf(str, "%d expanded_nodes\n%d nodes in closed set\n%d nodes in open set\n", closed_set.total_entries + 1, closed_set.total_entries, queue.total_entries);
+            god_mode_debug(str);
             god_mode_debug("Returning solution\n");  
-            #endif 
+            //printf("%d expanded_nodes\n%d nodes in closed set\n%d nodes in open set\n", closed_set.total_entries + 1, closed_set.total_entries, queue.total_entries);
+            
             return 0;
         }
     }
@@ -76,7 +79,6 @@ lifo * recover_path(search_node * node)
             // TODO: clear entries from lifo
             return NULL;
         }
-        //entry->move = node->move;
         entry->node = node;
         entry->next = path->head;
         
@@ -98,11 +100,9 @@ void draw_node(search_node * node)
     {
         for (j = 0; j < 3 - 1; j++)
         {
-            //printf("%2d ", board[i][j]);
             !node->board[i][j] ? sprintf(str, " _ ") : sprintf(str, "%2d ", node->board[i][j]);
             god_mode_debug(str);
         }
-        //printf("%2d\n", board[i][j]);
         !node->board[i][j] ? sprintf(str, " _\n") : sprintf(str, "%2d\n", node->board[i][j]);
         god_mode_debug(str);
     }
@@ -138,42 +138,47 @@ inline int manhattan_distance(search_node * node)
     return ret;
 }
 
-int expand_node(search_node * node, priority_queue * open_set, lifo * closed_set)
+int expand_node(priority_queue * open_set, lifo * closed_set)
 {
-    search_node * successor[4];
+    search_node * successor;
+    search_node * expanded_node = open_set->head->node;
     
-    if (is_goal(node))
+    if (is_goal(expanded_node))
         return 1;
+    
+    lifo_add_entry(closed_set, expanded_node);
+    pq_pop_head(open_set);
     
     for (int k = 0; k < 4; k++)
     {        
         switch (k)
         {
             case up:
-                if (expand_node_up(node, &successor[k]) < 0)
+                if (expand_node_up(expanded_node, &successor) < 0)
                     continue;
                 break;
             case down:
-                if (expand_node_down(node, &successor[k]) < 0)
+                if (expand_node_down(expanded_node, &successor) < 0)
                     continue;
                 break;
             case left:
-                if (expand_node_left(node, &successor[k]) < 0) 
+                if (expand_node_left(expanded_node, &successor) < 0) 
                     continue;
                 break;
             case right:
-                if (expand_node_right(node, &successor[k]) < 0)
+                if (expand_node_right(expanded_node, &successor) < 0)
                     continue;
                 break;
         }
         
         #if DEBUG
-        sprintf(str, "Checking if node with id %llu is already in history\n", successor[k]->key);
+        sprintf(str, "Checking if node with id %llu is already in history\n", successor->key);
         god_mode_debug(str);
         #endif
-        if(node_in_closed_set(closed_set, successor[k]) || node_in_open_set(open_set, successor[k]))
+        
+        if(node_in_closed_set(closed_set, successor) || node_in_open_set(open_set, successor))
         {
-            free(successor[k]);
+            free(successor);
             #if DEBUG
             god_mode_debug("Node is already in history\n");
             #endif
@@ -183,12 +188,9 @@ int expand_node(search_node * node, priority_queue * open_set, lifo * closed_set
             #if DEBUG
             god_mode_debug("Node is not in history, it will be added to open_set\n");
             #endif
-            pq_add_entry(open_set, successor[k], f(successor[k]));
+            pq_add_entry(open_set, successor, f(successor));
         }
     }
-    
-    lifo_add_entry(closed_set, open_set->head->node);
-    pq_pop_head(open_set);
     
     return 0;
 }
@@ -403,30 +405,54 @@ int pq_add_entry(priority_queue * queue, search_node * node, int priority)
     entry->node = node;
     entry->priority = priority;
     
+    #if DEBUG
+        sprintf(str, "[%s] Adding node with id %llu and priority %d\n", __FUNCTION__, node->key, priority);
+        god_mode_debug(str);
+    #endif
+    
     if (queue->total_entries > 0)
     {
-        aux = queue->head;
-        while (aux->next != NULL)
-        {
-            if (equal_nodes(aux->node, node) && (aux->node->g < node->g))
-            {
-                free(entry);
-                return -1;
-            }
+        aux = queue->head;        
+        while (aux->next != NULL && 
+              (aux->priority < priority ||
+              (aux->priority == priority && aux->node->g > entry->node->g)))
             aux = aux->next;
-        }    
         
-        aux = queue->head;
-        while (aux->next != NULL && aux->next->priority < priority)
-            aux = aux->next;
-         
-        entry->next = aux->next;
-        aux->next = entry;
+        if (aux->priority == priority && aux->node->g > entry->node->g) // insert entry after aux
+        {
+            entry->previous = aux;
+            entry->next = aux->next;
+            aux->next = entry;
+            if (entry->next != NULL)
+                entry->next->previous = entry;
+        }
+        else if (aux->priority >= priority) // insert entry before aux
+        {
+            entry->previous = aux->previous;
+            entry->next = aux;
+            aux->previous = entry;
+            if (entry->previous == NULL)
+                queue->head = entry;
+            else
+                entry->previous->next = entry;
+        }
+        else // Last entry - Triggered exclusively by aux->next == NULL (i.e. aux->priority < priority)
+        {
+            entry->next = aux->next;
+            entry->previous = aux;
+            aux->next = entry;
+        }
     }
-    else
+    else // First entry
     {
+        #if DEBUG
+        god_mode_debug("Condition 0\n");
+        #endif
         queue->head = entry;
+        entry->next = NULL;
+        entry->previous = NULL;
     }
+    
     queue->total_entries++;
     
     return 0;
@@ -439,6 +465,7 @@ void pq_pop_head(priority_queue * queue)
         pq_entry * new_head = queue->head->next;
         free(queue->head);
         queue->head = new_head;
+        queue->head->previous = NULL;
     }
     else
     {
@@ -453,9 +480,40 @@ bool node_in_open_set(priority_queue * open_set, search_node * node)
     pq_entry * aux;
     aux = open_set->head;
     for (aux = open_set->head; aux != NULL; aux = aux->next)
-    {        
-        if(equal_nodes(aux->node, node))
-            return true;
+    {
+        #if DEBUG
+        sprintf(str, "[%s] Comparing nodes with id %llu and %llu\n", __FUNCTION__, node->key, aux->node->key);
+        god_mode_debug(str);
+        #endif
+        if (equal_nodes(aux->node, node))
+        {
+            if ((aux->node->g) > (node->g))
+            {
+                #if DEBUG
+                sprintf(str, "[%s] aux has cost %d and new node %d\n[%s] Removing equal entry with larger priority\n", __FUNCTION__, aux->node->g, node->g, __FUNCTION__);
+                god_mode_debug(str);
+                #endif
+                
+                if (aux->previous != NULL)
+                    aux->previous->next = aux->next;
+                else
+                    open_set->head = aux->next;
+                    
+                if (aux->next != NULL)
+                    aux->next->previous = aux->previous;
+                    
+                free(aux->node); // this node will no longer be needed
+                free(aux);
+                
+                open_set->total_entries--;
+                
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
     }
     
     return false;
@@ -469,11 +527,13 @@ void print_priority_queue(priority_queue * queue)
     god_mode_debug(str);
     for (int i = 0; i < queue->total_entries; i++, entry = entry->next)
     {
+        sprintf(str, "id = %llu\n", entry->node->key);
+        god_mode_debug(str);
         sprintf(str, "priority = %d\n", entry->priority);
         god_mode_debug(str);
         sprintf(str, "moves = %d\n", entry->node->g);
         god_mode_debug(str);
-        sprintf(str, "manhattan = %d\n",h(entry->node));
+        sprintf(str, "manhattan = %d\n",entry->priority - entry->node->g);
         god_mode_debug(str);
         draw_node(entry->node);
         
@@ -511,11 +571,12 @@ int lifo_rem_entry(lifo * queue, search_node * node)
     
     while (entry->next != NULL)
     {
-        if(equal_nodes(entry->next->node, node))
+        if (equal_nodes(entry->next->node, node))
         {
             aux = entry->next;
             entry->next = aux->next;
             free(aux);
+            queue->total_entries--;
             return 0;
         }
         entry = entry->next;

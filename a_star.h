@@ -19,6 +19,7 @@ typedef struct queue_entry{
     search_node * node;
     int priority;
     struct queue_entry * next;
+    struct queue_entry * previous;
 }pq_entry;
 
 typedef struct{
@@ -29,6 +30,7 @@ typedef struct{
 // LIFO Queue structures
 typedef struct lifo_entry{
     struct lifo_entry * next;
+    //struct lifo_entry * previous;
     search_node * node;
 }lifo_entry;
 
@@ -43,7 +45,7 @@ int a_star_search(search_node * root, lifo ** path);
 extern inline int manhattan_distance(search_node * node);
 extern inline int h(search_node * node);
 extern inline void node_find_blank(search_node * node, int * row, int * col);
-int expand_node(search_node * node, priority_queue * open_set, lifo * closed_set);
+int expand_node(priority_queue * open_set, lifo * closed_set);
 extern inline int expand_node_up(search_node *source_node, search_node ** new_node);
 extern inline int expand_node_down(search_node *source_node, search_node ** new_node);
 extern inline int expand_node_left(search_node *source_node, search_node ** new_node);

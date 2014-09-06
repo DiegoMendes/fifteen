@@ -21,31 +21,113 @@ void save(void);
 
 char str[40];
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    board_cenas[0][0] = 4;
-    board_cenas[0][1] = 2;
-    board_cenas[0][2] = 5;
+    if (argc != 2)
+        return -1;
     
-    board_cenas[1][0] = 0;
-    board_cenas[1][1] = 8;
-    board_cenas[1][2] = 6;
+    if (strcmp(argv[1],"1") == 0)
+    {
+        board_cenas[0][0] = 4;
+        board_cenas[0][1] = 2;
+        board_cenas[0][2] = 5;
     
-    board_cenas[2][0] = 1;
-    board_cenas[2][1] = 3;
-    board_cenas[2][2] = 7;
+        board_cenas[1][0] = 0;
+        board_cenas[1][1] = 8;
+        board_cenas[1][2] = 6;
     
-    /*board_cenas[0][0] = 0;
-    board_cenas[0][1] = 1;
-    board_cenas[0][2] = 3;
+        board_cenas[2][0] = 1;
+        board_cenas[2][1] = 3;
+        board_cenas[2][2] = 7;
+    }
+    else if (strcmp(argv[1],"2") == 0)
+    {
+        board_cenas[0][0] = 0;
+        board_cenas[0][1] = 1;
+        board_cenas[0][2] = 3;
     
-    board_cenas[1][0] = 4;
-    board_cenas[1][1] = 2;
-    board_cenas[1][2] = 5;
+        board_cenas[1][0] = 4;
+        board_cenas[1][1] = 2;
+        board_cenas[1][2] = 5;
     
-    board_cenas[2][0] = 7;
-    board_cenas[2][1] = 8;
-    board_cenas[2][2] = 6;*/
+        board_cenas[2][0] = 7;
+        board_cenas[2][1] = 8;
+        board_cenas[2][2] = 6;
+    }
+    else if (strcmp(argv[1],"3") == 0)
+    {
+        board_cenas[0][0] = 1;
+        board_cenas[0][1] = 2;
+        board_cenas[0][2] = 3;
+    
+        board_cenas[1][0] = 0;
+        board_cenas[1][1] = 7;
+        board_cenas[1][2] = 6;
+    
+        board_cenas[2][0] = 5;
+        board_cenas[2][1] = 4;
+        board_cenas[2][2] = 8;
+    }
+    else if (strcmp(argv[1],"4") == 0)
+    {
+        board_cenas[0][0] = 6;
+        board_cenas[0][1] = 3;
+        board_cenas[0][2] = 1;
+    
+        board_cenas[1][0] = 8;
+        board_cenas[1][1] = 5;
+        board_cenas[1][2] = 7;
+    
+        board_cenas[2][0] = 4;
+        board_cenas[2][1] = 0;
+        board_cenas[2][2] = 2;
+    }
+    else if (strcmp(argv[1],"5") == 0)
+    {
+        board_cenas[0][0] = 0;
+        board_cenas[0][1] = 7;
+        board_cenas[0][2] = 5;
+    
+        board_cenas[1][0] = 6;
+        board_cenas[1][1] = 2;
+        board_cenas[1][2] = 8;
+    
+        board_cenas[2][0] = 3;
+        board_cenas[2][1] = 4;
+        board_cenas[2][2] = 1;
+    }
+    else if (strcmp(argv[1],"6") == 0)
+    {
+        board_cenas[0][0] = 7;
+        board_cenas[0][1] = 8;
+        board_cenas[0][2] = 6;
+    
+        board_cenas[1][0] = 5;
+        board_cenas[1][1] = 3;
+        board_cenas[1][2] = 1;
+    
+        board_cenas[2][0] = 4;
+        board_cenas[2][1] = 0;
+        board_cenas[2][2] = 2;
+    }
+    else if (strcmp(argv[1],"7") == 0)
+    {
+        board_cenas[0][0] = 7;
+        board_cenas[0][1] = 4;
+        board_cenas[0][2] = 6;
+    
+        board_cenas[1][0] = 0;
+        board_cenas[1][1] = 1;
+        board_cenas[1][2] = 3;
+    
+        board_cenas[2][0] = 2;
+        board_cenas[2][1] = 5;
+        board_cenas[2][2] = 8;
+    }
+    else
+    {
+        return -2;
+    }   
     
     d = 3;
     
